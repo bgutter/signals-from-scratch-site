@@ -1,0 +1,6 @@
+# -*- mode: org; -*-
+#+OPTIONS: html-postamble:nil
+#+OPTIONS: num:nil
+
+#+HTML_HEAD: <script type="text/javascript" src="js/test.js"></script>
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="css/site-theme.css"/>

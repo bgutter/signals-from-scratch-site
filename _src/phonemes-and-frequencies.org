@@ -1,0 +1,898 @@
+# -*- org-export-babel-evaluate: nil -*-
+#+TITLE: Phonemes and Frequencies, or, Why is TLC's No Scrubs So Catchy?
+#+EXPORT_FILE_NAME: ../phonemes-and-frequencies.html
+#+SETUPFILE: site-theme.setup
+
+
+#+begin_example
+No, I don't want no scrub
+
+A scrub is a guy that can't get no love from me
+
+Hangin' out the passenger side of his best friend's ride
+
+Tryin' to holla at me
+
+[...]
+
+Well a scrub checkin' me, but his game is kinda weak
+
+And I know that he cannot approach me
+
+'Cause I'm lookin' like class and he's lookin' like trash
+
+Can't get wit' a deadbeat ass, so...
+#+end_example
+
+* Outline :noexport:
+** Motives & Intro
+
+Learn why signal processing is so fascinating, to someone with no background in it, and limited background in programming.
+
+Math and science are amazing, beautiful, and creative. But the way we teach it does STEM so little justice.
+
+My motives for this blog, and more specifically this article, is to show the patterns behind some of the most natual and human aspects of life. Music.
+
+By the end of this series, we're going to have;
+1. A crappy text to phoneme system
+2. A crappy blind source separation system
+3. A crappy speech to text system
+4. A crappy text to speech system
+5. A crappy phonaesthetic analysis framework
+6. A crappy catchiness metric
+7. A crappy analysis of our crappy metric
+8. A profound appreciation for how much fun you can have while half-assing something
+** Why does "No Scrubs" sound so good?
+** Look at lyrics
+** Check for rhyming patterns
+** Map words to phonemes, compare that way
+** Point out weaknesses
+** Go to audio analysis
+** Isolate vocals from everything else (vocal frequency ranges)
+** Map vocals to frequency patterns
+** 
+
+* Song Content :noexport:
+Verse 1:
+
+#+begin_example
+Oh-oh
+A scrub is a guy that thinks he's fly
+And is also known as a busta
+Always talkin' 'bout what he wants
+And just sits on his broke ass, so
+#+end_example
+
+Chorus:
+
+#+begin_example
+No, I don't want your number
+No, I don't wanna give you mine and
+No, I don't wanna meet you nowhere
+No, I don't want none of your time and
+
+No, I don't want no scrub
+A scrub is a guy that can't get no love from me
+Hangin' out the passenger side of his best friend's ride
+Tryin' to holla at me
+I don't want no scrub
+A scrub is a guy that can't get no love from me
+Hangin' out the passenger side of his best friend's ride
+Tryin' to holla at me
+#+end_example
+
+Verse 2:
+
+#+begin_example
+Well a scrub checkin' me, but his game is kinda weak
+And I know that he cannot approach me
+'Cause I'm lookin' like class and he's lookin' like trash
+Can't get wit' a deadbeat ass, so
+
+No, I don't want no scrub
+A scrub is a guy that can't get no love from me
+...
+#+end_example
+
+Bridge:
+
+#+begin_example
+If you don't have a car and you're walkin'
+Oh, yes son, I'm talkin' to you
+If you live at home wit' your momma
+Oh, yes son, I'm talkin' to you (Baby)
+If you have a shorty that you don't show love
+Oh, yes son, I'm talkin' to you
+Wanna get wit' me wit' no money
+Oh no, I don't want no
+No scrub
+No scrub, no, no
+No scrub, no, no, no, no
+No scrub, no, no
+#+end_example
+
+* Who Cares?
+
+TODO explain motivations, goals, and outline this process.
+
+- Start with a question
+- Inductive Phase: Find an answer
+  - Come up with a useful framework for understanding the question
+  - Stare at the original problem through the lens of the framework, and reframe the question
+  - Infer signal features or patterns using your framework of understanding
+  - Come up with testable hypothesis (or, more)
+- Deductive phase: Devil's advocate
+  - Find a test set
+  - Large scale testing and deductive reasoning to prove theory
+  - Note limitations of the test
+- Conclusion phase: Did you discover something, or fool yourself?
+
+* The Jam
+
+Let's start with the chorus;
+
+#+begin_example
+No, I don't want your number
+No, I don't wanna give you mine and
+No, I don't wanna meet you nowhere
+No, I don't want none of your time and
+
+No, I don't want no scrub
+A scrub is a guy that can't get no love from me
+Hangin' out the passenger side of his best friend's ride
+Tryin' to holla at me
+#+end_example
+
+Right off the bat, without any having to use any computer magic, we can notice a few things;
+- Near-rhyme: number, nowhere
+- Near-rhyme: you mine, your time
+- Near-rhyme: No scrub, no love
+- assonance: a, scrub, love, from
+- ?: passenger side, his best friend's ride,
+
+Rhyme, near rhyme, assonance, allitteration, huh?
+
+What are these? Define them
+
+One method we have for making the "sounds" of words easier to analyze are "phonemes", which are a set of discrete sounds used in human language.
+
+* All About Phonemes
+
+English has X phonemes. Here they are;
+
+arpabet and cmudict
+
+Some python to convert text into phonetic representation;
+
+chorus in phonemes;
+
+Are the patterns easier to see now?
+
+** Convert the verse to phonemes
+
+Let's download the most current version of CMUDict & fire up an IPython session.
+
+Download the dictionary file from cmudict:
+
+#+BEGIN_SRC ipython :session (my:org-buffer-babel-session-name) :exports both :results raw drawer
+import urllib.request
+
+CMUDICT_LOCATION = r"http://svn.code.sf.net/p/cmusphinx/code/trunk/cmudict/cmudict-0.7b"
+
+urllib.request.urlretrieve(CMUDICT_LOCATION, r"./cmudict")
+#+END_SRC
+
+#+RESULTS:
+:results:
+: ('./cmudict', <http.client.HTTPMessage at 0x7f2f78033370>)
+:end:
+
+And let's take a peek at what's inside. This command shows the last 10 lines of our downloaded file.
+
+#+begin_src bash :exports both :results value pp
+cat cmudict | tail -10
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ZYUGANOV  Z Y UW1 G AA0 N AA0 V
+ZYUGANOV(1)  Z UW1 G AA0 N AA0 V
+ZYUGANOV'S  Z Y UW1 G AA0 N AA0 V Z
+ZYUGANOV'S(1)  Z UW1 G AA0 N AA0 V Z
+ZYWICKI  Z IH0 W IH1 K IY0
+{BRACE  B R EY1 S
+{LEFT-BRACE  L EH1 F T B R EY1 S
+{OPEN-BRACE  OW1 P EH0 N B R EY1 S
+}CLOSE-BRACE  K L OW1 Z B R EY1 S
+}RIGHT-BRACE  R AY1 T B R EY1 S
+#+end_example
+
+As documented on Carnegie Mellon's site, the format of the file is as follows;
+TODO
+
+Let's look at the start of the file too:
+
+#+begin_src bash :exports both :results value pp
+cat cmudict | head -10
+#+end_src
+
+#+RESULTS:
+#+begin_example
+;;; # CMUdict  --  Major Version: 0.07
+;;; 
+;;; # $HeadURL$
+;;; # $Date::                                                   $:
+;;; # $Id::                                                     $:
+;;; # $Rev::                                                    $: 
+;;; # $Author::                                                 $:
+;;;
+;;; #
+;;; # ========================================================================
+#+end_example
+
+Ah, yeah, there are comments to ignore as well. We'll drop any lines beginning with three semicolons.
+
+Okay, so, that's cool. Let's load this data into Python by creating a map from words to pronunciations.
+
+#+BEGIN_SRC ipython :session (my:org-buffer-babel-session-name) :exports both :results raw drawer
+import re
+
+word_to_pronunciations = {}
+
+# Iterate across every line in the file
+with open("cmudict", "r", encoding="latin-1") as fin:
+    for line in fin:
+
+        # Split the word off the front of the line
+        word, *phonemes = line.split()
+
+        # Skip empty lines
+        if len( word ) <= 0:
+            continue
+
+        # If this word is punctuation, skip to the next one
+        # This skips comment lines too
+        first_letter_value = ord(word[0])
+        if first_letter_value < ord('A') or first_letter_value > ord('Z'):
+            continue
+
+        # Remove the (1), (2) etc from the end of words with mutliple pronunciations
+        word = re.sub( r"\(\d+\)$", "", word )
+
+        # Get the current pronunciation list for this word, creating it
+        # if needed, and add the new pronunciation.
+        try:
+            pronunciations = word_to_pronunciations[word]
+        except KeyError:
+            pronunciations = []
+            word_to_pronunciations[ word ] = pronunciations
+        pronunciations.append(tuple(phonemes))
+#+END_SRC
+
+#+RESULTS:
+:results:
+:end:
+
+As a test, let's see how Tomato is pronounced;
+
+#+BEGIN_SRC ipython :session (my:org-buffer-babel-session-name) :exports both :results raw drawer
+word_to_pronunciations[ "TOMATO" ]
+#+END_SRC
+
+#+RESULTS:
+:results:
+: [('T', 'AH0', 'M', 'EY1', 'T', 'OW2'), ('T', 'AH0', 'M', 'AA1', 'T', 'OW2')]
+:end:
+
+The debate continues, I guess.
+
+Anyhoo, let's translate the verse into phonemes;
+
+#+BEGIN_SRC ipython :session (my:org-buffer-babel-session-name) :exports both :results output pp
+VERSE_1 = """
+No, I don't want your number
+No, I don't wanna give you mine and
+No, I don't wanna meet you nowhere
+No, I don't want none of your time and
+
+No, I don't want no scrub
+A scrub is a guy that can't get no love from me
+Hangin' out the passenger side of his best friend's ride
+Tryin' to holla at me
+"""
+
+LETTERS_AND_APOSTROPHE_RE = r"[^a-zA-Z']"
+
+def text_to_phonemes( text ):
+    ret = []
+    for line in text.split("\n"):
+        for token in re.split("(" + LETTERS_AND_APOSTROPHE_RE + ")", line):
+            if token.upper() in word_to_pronunciations:
+                # We have a pronunciation for this token -- add it!
+                ret.append( "|".join( word_to_pronunciations[ token.upper() ][0] ) )
+            else:
+                ret.append( token )
+        ret.append( "\n" )
+    return "".join( ret )
+
+print( text_to_phonemes( VERSE_1 ) )
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+N|OW1, AY1 D|OW1|N|T W|AA1|N|T Y|AO1|R N|AH1|M|B|ER0
+N|OW1, AY1 D|OW1|N|T W|AA1|N|AH0 G|IH1|V Y|UW1 M|AY1|N AH0|N|D
+N|OW1, AY1 D|OW1|N|T W|AA1|N|AH0 M|IY1|T Y|UW1 N|OW1|W|EH2|R
+N|OW1, AY1 D|OW1|N|T W|AA1|N|T N|AH1|N AH1|V Y|AO1|R T|AY1|M AH0|N|D
+
+N|OW1, AY1 D|OW1|N|T W|AA1|N|T N|OW1 S|K|R|AH1|B
+AH0 S|K|R|AH1|B IH1|Z AH0 G|AY1 DH|AE1|T K|AE1|N|T G|EH1|T N|OW1 L|AH1|V F|R|AH1|M M|IY1
+HH|AE1|NG|G|IH0|N AW1|T DH|AH0 P|AE1|S|AH0|N|JH|ER0 S|AY1|D AH1|V HH|IH1|Z B|EH1|S|T F|R|EH1|N|D|Z R|AY1|D
+T|R|AY1|IH0|N T|UW1 holla AE1|T M|IY1
+
+
+#+end_example
+
+Let's add a pronunciation for "holla":
+
+#+BEGIN_SRC ipython :session (my:org-buffer-babel-session-name) :exports both :results raw drawer
+word_to_pronunciations[ "HOLLA" ] = [ [ "HH", "AA1", "L", "AH0" ] ]
+#+END_SRC
+
+#+RESULTS:
+:results:
+:end:
+
+And try again;
+
+
+#+BEGIN_SRC ipython :session (my:org-buffer-babel-session-name) :exports both :results output pp
+print( text_to_phonemes( VERSE_1 ) )
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+N|OW1, AY1 D|OW1|N|T W|AA1|N|T Y|AO1|R N|AH1|M|B|ER0
+N|OW1, AY1 D|OW1|N|T W|AA1|N|AH0 G|IH1|V Y|UW1 M|AY1|N AH0|N|D
+N|OW1, AY1 D|OW1|N|T W|AA1|N|AH0 M|IY1|T Y|UW1 N|OW1|W|EH2|R
+N|OW1, AY1 D|OW1|N|T W|AA1|N|T N|AH1|N AH1|V Y|AO1|R T|AY1|M AH0|N|D
+
+N|OW1, AY1 D|OW1|N|T W|AA1|N|T N|OW1 S|K|R|AH1|B
+AH0 S|K|R|AH1|B IH1|Z AH0 G|AY1 DH|AE1|T K|AE1|N|T G|EH1|T N|OW1 L|AH1|V F|R|AH1|M M|IY1
+HH|AE1|NG|G|IH0|N AW1|T DH|AH0 P|AE1|S|AH0|N|JH|ER0 S|AY1|D AH1|V HH|IH1|Z B|EH1|S|T F|R|EH1|N|D|Z R|AY1|D
+T|R|AY1|IH0|N T|UW1 HH|AA1|L|AH0 AE1|T M|IY1
+
+
+#+end_example
+
+
+Well, that's hard to look at. Let's add some color by converting our output from text to html, and highlighting vowel phonemes.
+
+#+BEGIN_SRC ipython :session (my:org-buffer-babel-session-name) :exports both :results output html
+  EXPORT_BOX_STYLE = """
+  border: 1px solid #ccc;
+  box-shadow: 3px 3px 3px #eee;
+  padding: 8pt;
+  font-family: monospace;
+  overflow: auto;
+  margin: 1.2em;"""
+
+  WORD_STYLE = """
+  padding: 1px;
+  border: 1px solid black;
+  display: inline-block;"""
+
+  VOWEL_PHONEMES = [ "AA", "AE", "AH", "AO", "EH", "IH", "IY", "UH", "UW",
+                     "AW", "AY", "ER", "EY", "OW", "OY" ]
+
+  def background_color( text, colorcode ):
+      return r"""<span style="background-color:#{};">{}</span>""".format( colorcode, text )
+
+  def colorize_phonemes( *phonemes ):
+      template = r"""<span style="{}">{}</span>"""
+      ret = []
+      for p in phonemes:
+          if p[:-1] in VOWEL_PHONEMES:
+              ret.append( background_color( p, "fdd" ) )
+          else:
+              ret.append( background_color( p, "dfd" ) )
+      return template.format( WORD_STYLE, "|".join( ret ) )
+
+  def text_to_phonemes( text ):
+      template = r"""<div style="{}">{}</div>"""
+      ret = []
+      for line in text.split("\n"):
+          for token in re.split("(" + LETTERS_AND_APOSTROPHE_RE + ")", line):
+              if token.upper() in word_to_pronunciations:
+                  # We have a pronunciation for this token -- add it!
+                  first_pronunciation = word_to_pronunciations[ token.upper() ][0]
+                  colored_phonemes = colorize_phonemes( *first_pronunciation )
+                  ret.append( colored_phonemes )
+              else:
+                  ret.append( token )
+          ret.append( "</br>\n" )
+      return template.format( EXPORT_BOX_STYLE, "".join( ret ) )
+
+  print( text_to_phonemes( VERSE_1 ) )
+#+END_SRC
+
+#+RESULTS:
+#+begin_export html
+<div style="
+border: 1px solid #ccc;
+box-shadow: 3px 3px 3px #eee;
+padding: 8pt;
+font-family: monospace;
+overflow: auto;
+margin: 1.2em;"></br>
+<span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span>, <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AY1</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">D</span>|<span style="background-color:#fdd;">OW1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">W</span>|<span style="background-color:#fdd;">AA1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">Y</span>|<span style="background-color:#fdd;">AO1</span>|<span style="background-color:#dfd;">R</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">M</span>|<span style="background-color:#dfd;">B</span>|<span style="background-color:#fdd;">ER0</span></span></br>
+<span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span>, <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AY1</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">D</span>|<span style="background-color:#fdd;">OW1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">W</span>|<span style="background-color:#fdd;">AA1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">AH0</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">G</span>|<span style="background-color:#fdd;">IH1</span>|<span style="background-color:#dfd;">V</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">Y</span>|<span style="background-color:#fdd;">UW1</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">M</span>|<span style="background-color:#fdd;">AY1</span>|<span style="background-color:#dfd;">N</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AH0</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">D</span></span></br>
+<span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span>, <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AY1</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">D</span>|<span style="background-color:#fdd;">OW1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">W</span>|<span style="background-color:#fdd;">AA1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">AH0</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">M</span>|<span style="background-color:#fdd;">IY1</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">Y</span>|<span style="background-color:#fdd;">UW1</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span>|<span style="background-color:#dfd;">W</span>|<span style="background-color:#fdd;">EH2</span>|<span style="background-color:#dfd;">R</span></span></br>
+<span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span>, <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AY1</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">D</span>|<span style="background-color:#fdd;">OW1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">W</span>|<span style="background-color:#fdd;">AA1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">N</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">V</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">Y</span>|<span style="background-color:#fdd;">AO1</span>|<span style="background-color:#dfd;">R</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">T</span>|<span style="background-color:#fdd;">AY1</span>|<span style="background-color:#dfd;">M</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AH0</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">D</span></span></br>
+</br>
+<span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span>, <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AY1</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">D</span>|<span style="background-color:#fdd;">OW1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">W</span>|<span style="background-color:#fdd;">AA1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">S</span>|<span style="background-color:#dfd;">K</span>|<span style="background-color:#dfd;">R</span>|<span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">B</span></span></br>
+<span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AH0</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">S</span>|<span style="background-color:#dfd;">K</span>|<span style="background-color:#dfd;">R</span>|<span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">B</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">IH1</span>|<span style="background-color:#dfd;">Z</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AH0</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">G</span>|<span style="background-color:#fdd;">AY1</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">DH</span>|<span style="background-color:#fdd;">AE1</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">K</span>|<span style="background-color:#fdd;">AE1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">G</span>|<span style="background-color:#fdd;">EH1</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">L</span>|<span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">V</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">F</span>|<span style="background-color:#dfd;">R</span>|<span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">M</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">M</span>|<span style="background-color:#fdd;">IY1</span></span></br>
+<span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">HH</span>|<span style="background-color:#fdd;">AE1</span>|<span style="background-color:#dfd;">NG</span>|<span style="background-color:#dfd;">G</span>|<span style="background-color:#fdd;">IH0</span>|<span style="background-color:#dfd;">N</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AW1</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">DH</span>|<span style="background-color:#fdd;">AH0</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">P</span>|<span style="background-color:#fdd;">AE1</span>|<span style="background-color:#dfd;">S</span>|<span style="background-color:#fdd;">AH0</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">JH</span>|<span style="background-color:#fdd;">ER0</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">S</span>|<span style="background-color:#fdd;">AY1</span>|<span style="background-color:#dfd;">D</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">V</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">HH</span>|<span style="background-color:#fdd;">IH1</span>|<span style="background-color:#dfd;">Z</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">B</span>|<span style="background-color:#fdd;">EH1</span>|<span style="background-color:#dfd;">S</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">F</span>|<span style="background-color:#dfd;">R</span>|<span style="background-color:#fdd;">EH1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">D</span>|<span style="background-color:#dfd;">Z</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">R</span>|<span style="background-color:#fdd;">AY1</span>|<span style="background-color:#dfd;">D</span></span></br>
+<span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">T</span>|<span style="background-color:#dfd;">R</span>|<span style="background-color:#fdd;">AY1</span>|<span style="background-color:#fdd;">IH0</span>|<span style="background-color:#dfd;">N</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">T</span>|<span style="background-color:#fdd;">UW1</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">HH</span>|<span style="background-color:#fdd;">AA1</span>|<span style="background-color:#dfd;">L</span>|<span style="background-color:#fdd;">AH0</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AE1</span>|<span style="background-color:#dfd;">T</span></span> <span style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">M</span>|<span style="background-color:#fdd;">IY1</span></span></br>
+</br>
+</div>
+#+end_export
+
+Now we're cooking with gas! Let's add the syllable count after each word, and change up the colors to something more appealing.
+
+#+BEGIN_SRC ipython :session (my:org-buffer-babel-session-name) :exports both :results output html
+  EXPORT_BOX_STYLE = """
+  border: 1px solid #ccc;
+  box-shadow: 3px 3px 3px #eee;
+  padding: 8pt;
+  font-family: monospace;
+  font-size: 13px;
+  overflow: auto;
+  margin: 1.2em;"""
+
+  WORD_STYLE = """
+  padding: 1px;
+  border: 1px solid black;
+  display: inline-block;"""
+
+  VOWEL_PHONEMES = [ "AA", "AE", "AH", "AO", "EH", "IH", "IY", "UH", "UW",
+                     "AW", "AY", "ER", "EY", "OW", "OY" ]
+
+  def background_color( text, colorcode ):
+      return r"""<span style="background-color:#{};">{}</span>""".format( colorcode, text )
+
+  def word_to_html( word ):
+      template = r"""<span title="{}" style="{}">{}</span>{}"""
+      ret = []
+      phonemes = word_to_pronunciations[ word.upper() ][0]
+      for p in phonemes:
+          if p[:-1] in VOWEL_PHONEMES:
+              ret.append( background_color( p, "fdd" ) )
+          else:
+              ret.append( background_color( p, "dfd" ) )
+      syllable_count = len( [ p for p in phonemes if p[:-1] in VOWEL_PHONEMES ] )
+      return template.format( word, WORD_STYLE, "|".join( ret ), syllable_count )
+
+  def text_to_phonemes( text ):
+      template = r"""<div style="{}">{}</div>"""
+      ret = []
+      for line in text.split("\n"):
+          for token in re.split("(" + LETTERS_AND_APOSTROPHE_RE + ")", line):
+              if token.upper() in word_to_pronunciations:
+                  # We have a pronunciation for this token -- add it!
+                  colored_phonemes = word_to_html( token )
+                  ret.append( colored_phonemes )
+              else:
+                  ret.append( token )
+          ret.append( "</br>\n" )
+      return template.format( EXPORT_BOX_STYLE, "".join( ret ) )
+
+  print( text_to_phonemes( VERSE_1 ) )
+#+END_SRC
+
+#+RESULTS:
+#+begin_export html
+<div style="
+border: 1px solid #ccc;
+box-shadow: 3px 3px 3px #eee;
+padding: 8pt;
+font-family: monospace;
+font-size: 13px;
+overflow: auto;
+margin: 1.2em;"></br>
+<span title="No" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span>1, <span title="I" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AY1</span></span>1 <span title="don't" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">D</span>|<span style="background-color:#fdd;">OW1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="want" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">W</span>|<span style="background-color:#fdd;">AA1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="your" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">Y</span>|<span style="background-color:#fdd;">AO1</span>|<span style="background-color:#dfd;">R</span></span>1 <span title="number" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">M</span>|<span style="background-color:#dfd;">B</span>|<span style="background-color:#fdd;">ER0</span></span>2</br>
+<span title="No" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span>1, <span title="I" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AY1</span></span>1 <span title="don't" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">D</span>|<span style="background-color:#fdd;">OW1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="wanna" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">W</span>|<span style="background-color:#fdd;">AA1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">AH0</span></span>2 <span title="give" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">G</span>|<span style="background-color:#fdd;">IH1</span>|<span style="background-color:#dfd;">V</span></span>1 <span title="you" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">Y</span>|<span style="background-color:#fdd;">UW1</span></span>1 <span title="mine" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">M</span>|<span style="background-color:#fdd;">AY1</span>|<span style="background-color:#dfd;">N</span></span>1 <span title="and" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AH0</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">D</span></span>1</br>
+<span title="No" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span>1, <span title="I" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AY1</span></span>1 <span title="don't" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">D</span>|<span style="background-color:#fdd;">OW1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="wanna" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">W</span>|<span style="background-color:#fdd;">AA1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">AH0</span></span>2 <span title="meet" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">M</span>|<span style="background-color:#fdd;">IY1</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="you" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">Y</span>|<span style="background-color:#fdd;">UW1</span></span>1 <span title="nowhere" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span>|<span style="background-color:#dfd;">W</span>|<span style="background-color:#fdd;">EH2</span>|<span style="background-color:#dfd;">R</span></span>2</br>
+<span title="No" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span>1, <span title="I" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AY1</span></span>1 <span title="don't" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">D</span>|<span style="background-color:#fdd;">OW1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="want" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">W</span>|<span style="background-color:#fdd;">AA1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="none" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">N</span></span>1 <span title="of" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">V</span></span>1 <span title="your" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">Y</span>|<span style="background-color:#fdd;">AO1</span>|<span style="background-color:#dfd;">R</span></span>1 <span title="time" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">T</span>|<span style="background-color:#fdd;">AY1</span>|<span style="background-color:#dfd;">M</span></span>1 <span title="and" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AH0</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">D</span></span>1</br>
+</br>
+<span title="No" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span>1, <span title="I" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AY1</span></span>1 <span title="don't" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">D</span>|<span style="background-color:#fdd;">OW1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="want" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">W</span>|<span style="background-color:#fdd;">AA1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="no" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span>1 <span title="scrub" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">S</span>|<span style="background-color:#dfd;">K</span>|<span style="background-color:#dfd;">R</span>|<span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">B</span></span>1</br>
+<span title="A" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AH0</span></span>1 <span title="scrub" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">S</span>|<span style="background-color:#dfd;">K</span>|<span style="background-color:#dfd;">R</span>|<span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">B</span></span>1 <span title="is" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">IH1</span>|<span style="background-color:#dfd;">Z</span></span>1 <span title="a" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AH0</span></span>1 <span title="guy" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">G</span>|<span style="background-color:#fdd;">AY1</span></span>1 <span title="that" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">DH</span>|<span style="background-color:#fdd;">AE1</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="can't" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">K</span>|<span style="background-color:#fdd;">AE1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="get" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">G</span>|<span style="background-color:#fdd;">EH1</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="no" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">N</span>|<span style="background-color:#fdd;">OW1</span></span>1 <span title="love" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">L</span>|<span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">V</span></span>1 <span title="from" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">F</span>|<span style="background-color:#dfd;">R</span>|<span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">M</span></span>1 <span title="me" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">M</span>|<span style="background-color:#fdd;">IY1</span></span>1</br>
+<span title="Hangin'" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">HH</span>|<span style="background-color:#fdd;">AE1</span>|<span style="background-color:#dfd;">NG</span>|<span style="background-color:#dfd;">G</span>|<span style="background-color:#fdd;">IH0</span>|<span style="background-color:#dfd;">N</span></span>2 <span title="out" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AW1</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="the" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">DH</span>|<span style="background-color:#fdd;">AH0</span></span>1 <span title="passenger" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">P</span>|<span style="background-color:#fdd;">AE1</span>|<span style="background-color:#dfd;">S</span>|<span style="background-color:#fdd;">AH0</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">JH</span>|<span style="background-color:#fdd;">ER0</span></span>3 <span title="side" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">S</span>|<span style="background-color:#fdd;">AY1</span>|<span style="background-color:#dfd;">D</span></span>1 <span title="of" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AH1</span>|<span style="background-color:#dfd;">V</span></span>1 <span title="his" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">HH</span>|<span style="background-color:#fdd;">IH1</span>|<span style="background-color:#dfd;">Z</span></span>1 <span title="best" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">B</span>|<span style="background-color:#fdd;">EH1</span>|<span style="background-color:#dfd;">S</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="friend's" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">F</span>|<span style="background-color:#dfd;">R</span>|<span style="background-color:#fdd;">EH1</span>|<span style="background-color:#dfd;">N</span>|<span style="background-color:#dfd;">D</span>|<span style="background-color:#dfd;">Z</span></span>1 <span title="ride" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">R</span>|<span style="background-color:#fdd;">AY1</span>|<span style="background-color:#dfd;">D</span></span>1</br>
+<span title="Tryin'" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">T</span>|<span style="background-color:#dfd;">R</span>|<span style="background-color:#fdd;">AY1</span>|<span style="background-color:#fdd;">IH0</span>|<span style="background-color:#dfd;">N</span></span>2 <span title="to" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">T</span>|<span style="background-color:#fdd;">UW1</span></span>1 <span title="holla" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">HH</span>|<span style="background-color:#fdd;">AA1</span>|<span style="background-color:#dfd;">L</span>|<span style="background-color:#fdd;">AH0</span></span>2 <span title="at" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#fdd;">AE1</span>|<span style="background-color:#dfd;">T</span></span>1 <span title="me" style="
+padding: 1px;
+border: 1px solid black;
+display: inline-block;"><span style="background-color:#dfd;">M</span>|<span style="background-color:#fdd;">IY1</span></span>1</br>
+</br>
+</div>
+#+end_export
+
+
+* Let's Hear It!
+Only half the story -- lyrics do not capture the intensity or emphasis given 

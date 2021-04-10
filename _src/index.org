@@ -1,4 +1,6 @@
 #+TITLE: Signals from Scratch
+#+EXPORT_FILE_NAME: ../index.html
+#+SETUPFILE: site-theme.setup
 
 * Hello, world!
 
@@ -8,3 +10,5 @@
 
 #+RESULTS:
 : 15
+
+[[./phonemes-and-frequencies.org][Phonemes and Frequencies]]
